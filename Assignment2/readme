@@ -1,0 +1,46 @@
+To compile : gcc main.c
+
+To run: ./a.out
+
+
+#Input:
+A shell prompt of the form: <username@hostname:curr_dir> with path relative to home will appear
+
+Now enter Semi-colon (;) separated commands
+
+add '&' at the last of a command to run a process in background(ignored for builtin commands like cd ,echo ,ls , pinfo and pwd)
+
+#Process
+Implements foreground and background processes
+Process name and id with exit status printed when background process terminates
+
+Type pinfo in the prompt to print: pid,status, memory and executable path (on Linux machines)
+
+#Functions in main.c:-
+
+ls :- It handles ls ,ls -al,ls -a ,ls -l,ls -la.
+
+echo :- It handles echo command.
+
+cd :- It handles cd command.
+
+pinfo:- contains pinfo function. It prints the process related info of our shell program.
+
+pwd :-It handles pwd command.
+
+splitting :- It separates the given commands based on semi-colons(;) or separates the attributes of the commands based on spaces;
+
+read_line: takes input line
+
+allocation : allocates memory to a pointer 
+
+check : checks whether a given background process is closed 
+
+launch : maps the input command to the given function
+
+display : used to display the username and hostname
+
+finalPath : part of display function 
+
+        NAME - ZIA BASHIR
+        ROLL NO - 2018101006
