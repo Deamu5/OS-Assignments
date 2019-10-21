@@ -1,0 +1,9 @@
+#&#
+2018101006_assgn2.tar.gz
+a.out
+a.txt
+b.txt
+c.txt
+lines.txt
+main.c
+readme

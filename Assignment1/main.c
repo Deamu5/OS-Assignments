@@ -556,98 +556,140 @@ void redirection(char ** args){
 void piping(char ** args){
     //     int pipes=0;
     //   for( int k=0;args[k]!=NULL;k++) if (strcmp(args[k],"|")==0) pipes++;
-	int i=0,j=0,complete=0, count=0;
-	char *cur_cmd[1000];
+	int i=0,j=0,finish=0;
+	int cnt=0;
+	char *cur_com[1000];
 	int frd;
-	while(1){
+	while(1)
+	{
+		if(args[i]==NULL)break;
+		if(finish==1)break;
 		int p=0;
-        if(args[i]==NULL)break;
-		if(complete==1)break;
 		while(1){
-			if(args[j]==NULL){
-				complete=1;
+			if(args[j]==NULL)
+			{
+				finish=1;
 				break;
 			}
-			if(strcmp(args[j],"|")!=0){
-				cur_cmd[p]=args[j];
+			if(strcmp(args[j],"|")!=0)
+			{
+				cur_com[p]=args[j];
+				// printf("%s\n",cur_com[p]);
 				p++;
 			}
 			else break;
-
+			if(args[j]==NULL)
+			{
+				finish=1;
+				break;
+			}
 			j++;
 		}
-		cur_cmd[p]=NULL;
-		int pipo=0,fd[2],in,out;
-		count++;
+		cnt++;
 		j++;
-        if(count==1){	
-			char infile[1000];
-            int pipo=0;
-            if(pipe(fd)<0){
+		cur_com[p]=NULL;
+		int z=0;
+		int fd[2];
+		int in,out;
+		// printf("%lld\n",finish );
+		if(cnt==1)
+		{	
+			if(pipe(fd)==-1)
+			{
 				perror("piping error :");
 				return;
 			}
-			while(cur_cmd[pipo]!=NULL){
-				if(strcmp(cur_cmd[pipo],"<")==0){
-					frd = open(infile,O_RDONLY, 0644);
-                    cur_cmd[pipo]=NULL;
-					strcpy(infile,cur_cmd[pipo+1]);
+			int z=0;
+			char infile[1000];
+			while(cur_com[z]!=NULL)
+			{
+				// printf("%s\n",cur_com[z] );
+				if(strcmp(cur_com[z],"<")==0)
+				{
+					cur_com[z]=NULL;
+					strcpy(infile,cur_com[z+1]);
+					// int zz=0;
+					// while(cur_com[zz]!=NULL)
+					// {
+						// printf("%s\n",cur_com[zz] );
+						// zz++;
+					// }
 					in=dup(0);
-			   		dup2(frd,0);
+			   		frd = open(infile,O_RDONLY, 0644);
+					dup2(frd,0);
 				}
-				pipo++;				
+				z++;				
 			}
 			out=dup(1);
 			dup2(fd[1],1);
 			close(fd[1]);
 		}
-		else if(complete==1){
+		else if(finish==1)	
+		{
+			// redirect
+			int z=0;
 			char outfile[1000];
-			int pipo=0;
-		
-        	while(cur_cmd[pipo]!=NULL){
-				if(strcmp(cur_cmd[pipo],">>")==0){
-					frd= open(outfile, O_WRONLY | O_CREAT | O_APPEND, 0644);
-					cur_cmd[pipo]=NULL;
-					strcpy(outfile,cur_cmd[pipo+1]);
+			int flagg=0;
+			while(cur_com[z]!=NULL)
+			{
+				// printf("%s\n",cur_com[z] );
+				if(strcmp(cur_com[z],">")==0)
+				{
+					cur_com[z]=NULL;
+					strcpy(outfile,cur_com[z+1]);
 					out=dup(1);
+					frd= open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 					dup2(frd,1);
 					close(frd);
+					flagg=1;
 				}
-				else if(strcmp(cur_cmd[pipo],">")==0){
-					frd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-					cur_cmd[pipo]=NULL;
-					strcpy(outfile,cur_cmd[pipo+1]);
+				else if(strcmp(cur_com[z],">>")==0)
+				{
+					cur_com[z]=NULL;
+					strcpy(outfile,cur_com[z+1]);
 					out=dup(1);
+					frd = open(outfile, O_WRONLY | O_CREAT | O_APPEND, 0644);
 					dup2(frd,1);
 					close(frd);
+					flagg=1;
 				}
-				pipo++;				
+				z++;				
 			}
 			in = dup(0);
 			dup2(fd[0],0);
 			close(fd[0]);
 		}
-		else{
+		else
+		{
 			in = dup(0);
 			dup2(fd[0],0);
+			if(pipe(fd)==-1)
+			{
+				perror("piping error :");
+				return;
+			}
 			out=dup(1);
 			dup2(fd[1],1);
 			close(fd[1]);
 		}
 		pid_t pid;
-        pid=fork(); 
-		if(pid==-1){
-			perror("error forking  : ");
+		pid=fork(); 
+
+		if(pid==-1)
+		{
+			perror("fork error : ");
 			return;
 		}
-		else if(pid==0){
-			if(execvp(cur_cmd[0],cur_cmd)==-1){
-				perror("invalid command ");
+		else if(!pid)
+		{
+			if(execvp(cur_com[0],cur_com)==-1)
+			{
+				perror("command not found");
 				exit(EXIT_FAILURE);
 			}
 		} 
-		else if (pid >0){
+		else
+		{
 			wait(NULL);
 			dup2(in,0);
 			dup2(out,1);
@@ -855,6 +897,9 @@ int main(){
     char prmpt[100];
     display(prmpt);
     line = readline(prmpt);
+    // while(strlen(line) == 0) {
+    //     line = readline(prmpt);
+    // }
     add_history(line);
     cmds=splitting(line,1);
     char **argv = malloc(10000);
